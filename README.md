@@ -38,14 +38,18 @@ This guide provides instructions for setting up a Conda environment named "singl
 
 ## Examples
 
-Here is some example usage fore connecting the device, reading the counts, and then appending it to a csv file:
+Here is some example usage for connecting the device (on linux), reading the counts, and then appending it to a csv file:
 
 ```python
+from ccu import CCU
+
 ccu = CCU()
 ccu.connect("/dev/ttyUSB0")
 ccu.append_counts_to_csv("counts.csv")
 ccu.close()
 ```
+
+The address of the device can be found using `ccu.list_devices()`, which will return a list of serial devices. Usually it will be the only device listed, but if there is more than one it may be required to try each one until the correct one is found.
 
 You can read individual counts using:
 
@@ -54,3 +58,11 @@ ch1 = ccu.read_count("CH1")
 ch2 = ccu.read_count("CH2")
 coincidence = ccu.read_count("COINCIDENCE")
 ```
+
+If you are needing extra functionality beyond this, you may write SCPI commands directly to the device using the following syntax:
+
+```python
+ccu.send_command(SCPI_COMMAND_STRING)
+```
+
+Where SCPI_COMMAND_STRING is the SCPI command you wish to send, a full list of which may be found on page 10 within the manual of the CCU device.

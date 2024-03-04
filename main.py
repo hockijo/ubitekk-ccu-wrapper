@@ -1,4 +1,5 @@
 import serial
+from serial.tools.list_ports import comports
 import numpy
 import time
 
@@ -39,12 +40,22 @@ class CCU():
                                     parity="N",
                                     stopbits=1,
                                 )
+        print("Connected to: ", address)
         
     def close(self):
         """
         Closes the device.
         """
         self.device.close()
+
+    def list_ports(self):
+        """
+        Lists the available ports.
+
+        Returns:
+            list: A list of available ports.
+        """
+        return comports()
 
     def send_command(self, command:str):
         """
