@@ -56,6 +56,8 @@ ports = ccu.list_ports()
 ccu.connect(ports[0].device)
 ```
 
+To take a measurement, use `ccu.take_measurement()`. This will wait `dwell` (ie. the count collection time) + 1 seconds before allowing the program to continue.
+
 You can read individual counts using:
 
 ```python
