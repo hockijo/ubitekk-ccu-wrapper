@@ -1,6 +1,7 @@
 import serial
 from serial.tools.list_ports import comports
 import numpy
+from pprint import pprint
 import time
 
 class CCU():
@@ -48,13 +49,19 @@ class CCU():
         """
         self.device.close()
 
-    def list_ports(self):
+    def list_ports(self, verbose=True):
         """
         Lists the available ports.
 
         Returns:
             list: A list of available ports.
         """
+        ports = comports()
+        if verbose:
+            print("Available ports:")
+            for i, port in enumerate(ports):
+                print(f"On port {i}:")
+                pprint(vars(port))
         return comports()
 
     def send_command(self, command:str):
@@ -81,7 +88,7 @@ class CCU():
         """
         time.sleep(self.query_delay)
         response = self.device.readline().decode('utf-8').strip('\n')
-        if response == "Unknown Command":
+        if response == "Unknown command":
             raise RuntimeError(response)
         else:
             return response
@@ -109,8 +116,15 @@ class CCU():
             raise ValueError(channel + "is an invalid channel")
         
         return int(self.read_response())
+    
+    def take_measurement(self, dwell_time=2):
+        """
+        Takes a measurement on all channels.
+        """
+        self.send_command(":COUN:ON")
+        time.sleep(3)
 
-    def append_counts_to_csv(self, filename: str):
+    def append_counts_to_csv(self, filename: str, verbose=True):
         """
         Appends the count values to the specified CSV file.
 
@@ -118,18 +132,23 @@ class CCU():
             filename (str): The name of the CSV file to append the count values to.
 
         Returns:
-            None
+            list: A list of the count values.
         """
         ch1 = self.read_count("CH1")
         ch2 = self.read_count("CH2")
         coincidence = self.read_count("COINCIDENCE")
 
+        if verbose:
+            print(f"CH1: {ch1}, CH2: {ch2}, COINCIDENCE: {coincidence}")
         with open(filename, '+a') as f:
-            f.write("{},{},{}\n".format(ch1, ch2, coincidence))
+            f.write(f"{ch1},{ch2},{coincidence}\n")
+        return [ch1, ch2, coincidence]
 
 
 if __name__=="__main__":
     ccu = CCU()
-    ccu.connect("/dev/ttyUSB0")
+    ports = ccu.list_ports()
+    ccu.connect(ports[0].device)
+    ccu.take_measurement()
     ccu.append_counts_to_csv("counts.csv")
     ccu.close()
